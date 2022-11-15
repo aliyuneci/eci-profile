@@ -1,0 +1,33 @@
+apiVersion: eci.aliyun.com/v1beta1
+kind: Selector
+metadata:
+  name: test-virtual-node-only
+spec:
+  objectLabels:
+    matchLabels:
+      app: nginx-test-1
+  effect:
+    annotations:
+      k8s.aliyun.com/eci-image-cache: "true" # 注入annotation，开启自动镜像缓存
+  policy:
+    virtualNodeOnly: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test-1
+spec:
+  selector:
+    matchLabels:
+      app: nginx-test-1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-test-1
+    spec:
+      containers:
+        - name: nginx
+          image: registry-vpc.cn-shanghai.aliyuncs.com/eci_open/nginx:1.14.2
+          ports:
+            - containerPort: 80

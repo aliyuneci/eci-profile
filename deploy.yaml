@@ -1,0 +1,140 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eci-profile
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+      - namespaces
+      - resourcequotas
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - patch
+  - apiGroups:
+      - "admissionregistration.k8s.io"
+    resources:
+      - mutatingwebhookconfigurations
+    verbs:
+      - get
+      - patch
+      - create
+      - delete
+  - apiGroups:
+      - "eci.aliyun.com"
+    resources:
+      - selectors
+    verbs:
+      - get
+      - watch
+      - list
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+#apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: selectors.eci.aliyun.com
+spec:
+  group: eci.aliyun.com
+  version: v1beta1
+  names:
+    kind: Selector
+    plural: selectors
+    shortNames:
+      - selectors
+    categories:
+      - all
+  scope: Cluster
+  validation:
+    openAPIV3Schema:
+      type: object
+      required:
+        - metadata
+        - spec
+      properties:
+        apiVersion:
+          type: string
+        kind:
+          type: string
+        metadata:
+          type: object
+        spec:
+          type: object
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: eci-profile
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eci-profile
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: eci-profile
+subjects:
+  - kind: ServiceAccount
+    name: eci-profile
+    namespace: kube-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    role: eci-profile
+  name: eci-profile
+  namespace: kube-system
+spec:
+  ports:
+    - port: 443
+      targetPort: 443
+  selector:
+    app: eci-profile
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eci-profile
+  namespace: kube-system
+  labels:
+    app: eci-profile
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eci-profile
+  template:
+    metadata:
+      labels:
+        app: eci-profile
+    spec:
+      serviceAccount: eci-profile
+      containers:
+        - name: eci-profile
+          image: registry.cn-beijing.aliyuncs.com/eci-release/eci-profile:test
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 2
+              memory: 4Gi
+            limits:
+              cpu: 4
+              memory: 8Gi
+          env:
+            - name: KUBERNETES_MASTER
+              value: https://kubernetes:443

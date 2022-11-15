@@ -1,0 +1,37 @@
+apiVersion: eci.aliyun.com/v1beta1
+kind: Selector
+metadata:
+  name: test-normal-node-prefer
+spec:
+  objectLabels:
+    matchLabels:
+      app: nginx-test-2
+  effect:
+    annotations:
+      k8s.aliyun.com/eci-image-cache: "true" # 开启自动镜像缓存
+  policy:
+    normalNodePrefer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test-2
+spec:
+  selector:
+    matchLabels:
+      app: nginx-test-2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-test-2
+    spec:
+      containers:
+        - name: nginx
+          image: registry-vpc.cn-shanghai.aliyuncs.com/eci_open/nginx:1.14.2
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 2
+              memory: 4
