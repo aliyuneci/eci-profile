@@ -1,8 +1,8 @@
 package profile
 
-import eciv1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+import eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 
-type SelectorList []eciv1beta1.Selector
+type SelectorList []eciv1.Selector
 
 func (sl SelectorList) Less(i, j int) bool {
 	iPriority := int32(0)

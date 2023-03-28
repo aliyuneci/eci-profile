@@ -1,7 +1,7 @@
 package policy
 
 import (
-	eciv1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -39,7 +39,7 @@ func addVirtualNodeSelector() PatchInfo {
 	}
 }
 
-func addAnnotations(selector *eciv1beta1.Selector, pod *v1.Pod) PatchInfo {
+func addAnnotations(selector *eciv1.Selector, pod *v1.Pod) PatchInfo {
 	annotations := pod.Annotations
 	if annotations == nil {
 		annotations = map[string]string{}
@@ -54,7 +54,7 @@ func addAnnotations(selector *eciv1beta1.Selector, pod *v1.Pod) PatchInfo {
 	}
 }
 
-func addLabels(selector *eciv1beta1.Selector, pod *v1.Pod) PatchInfo {
+func addLabels(selector *eciv1.Selector, pod *v1.Pod) PatchInfo {
 	labels := pod.Labels
 	if labels == nil {
 		labels = map[string]string{}

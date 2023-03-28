@@ -26,8 +26,8 @@ set -o pipefail
 bash ../vendor/k8s.io/code-generator/generate-groups.sh "deepcopy,client,informer,lister" \
   eci.io/eci-profile/pkg/client \
   eci.io/eci-profile/pkg/apis \
-  eci:v1beta1 \
-  --output-base ../../../.. \
+  eci:v1 \
+  --output-base . \
   --go-header-file ./boilerplate.go.txt
 
 # To use your own boilerplate text append:

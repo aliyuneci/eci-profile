@@ -1,7 +1,7 @@
 package policy
 
 import (
-	eciv1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	"eci.io/eci-profile/pkg/resource"
 	"eci.io/eci-profile/pkg/utils"
 	v1 "k8s.io/api/core/v1"
@@ -29,17 +29,17 @@ func NewManager(rm *resource.Manager) *Manager {
 	}
 }
 
-func (m *Manager) OnPodCreating(selector *eciv1beta1.Selector, pod *v1.Pod) ([]PatchInfo, error) {
+func (m *Manager) OnPodCreating(selector *eciv1.Selector, pod *v1.Pod) ([]PatchInfo, error) {
 	executor := m.findExecutor(selector)
 	return executor.OnPodCreating(selector, pod)
 }
 
-func (m *Manager) OnPodUnscheduled(selector *eciv1beta1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
+func (m *Manager) OnPodUnscheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
 	executor := m.findExecutor(selector)
 	return executor.OnPodUnscheduled(selector, pod)
 }
 
-func (m *Manager) findExecutor(selector *eciv1beta1.Selector) Executor {
+func (m *Manager) findExecutor(selector *eciv1.Selector) Executor {
 	executorName := ExecutorNameVirtualNodeOnly
 	policy := selector.Spec.Policy
 	switch {

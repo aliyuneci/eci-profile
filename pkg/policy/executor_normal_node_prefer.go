@@ -1,7 +1,7 @@
 package policy
 
 import (
-	eciv1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	"eci.io/eci-profile/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 )
@@ -13,11 +13,11 @@ func NewNormalNodePreferExecutor() Executor {
 	return &NormalNodePreferExecutor{}
 }
 
-func (e *NormalNodePreferExecutor) OnPodCreating(selector *eciv1beta1.Selector, pod *v1.Pod) ([]PatchInfo, error) {
+func (e *NormalNodePreferExecutor) OnPodCreating(selector *eciv1.Selector, pod *v1.Pod) ([]PatchInfo, error) {
 	return nil, nil
 }
 
-func (e *NormalNodePreferExecutor) OnPodUnscheduled(selector *eciv1beta1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
+func (e *NormalNodePreferExecutor) OnPodUnscheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
 	if existVirtualTolerations(pod.Spec.Tolerations) {
 		return nil, nil
 	}

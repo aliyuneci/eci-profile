@@ -1,4 +1,4 @@
-apiVersion: eci.aliyun.com/v1beta1
+apiVersion: eci.aliyun.com/v1
 kind: Selector
 metadata:
   name: test-normal-node-prefer

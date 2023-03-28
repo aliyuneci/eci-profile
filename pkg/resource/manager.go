@@ -3,10 +3,10 @@ package resource
 import (
 	"time"
 
-	eciv1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	"eci.io/eci-profile/pkg/client/clientset/versioned"
 	"eci.io/eci-profile/pkg/client/informers/externalversions"
-	listereciv1beta1 "eci.io/eci-profile/pkg/client/listers/eci/v1beta1"
+	listereciv1 "eci.io/eci-profile/pkg/client/listers/eci/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
@@ -26,7 +26,7 @@ type Manager struct {
 	podLister              listercorev1.PodLister
 	nodeLister             listercorev1.NodeLister
 	nsLister               listercorev1.NamespaceLister
-	selectorLister         listereciv1beta1.SelectorLister
+	selectorLister         listereciv1.SelectorLister
 	rqLister               listercorev1.ResourceQuotaLister
 }
 
@@ -44,8 +44,8 @@ func NewManager(k8sClient *kubernetes.Clientset, profileClient *versioned.Client
 		nodeLister:             coreV1InformerFactory.Core().V1().Nodes().Lister(),
 		nsLister:               coreV1InformerFactory.Core().V1().Namespaces().Lister(),
 		rqLister:               coreV1InformerFactory.Core().V1().ResourceQuotas().Lister(),
-		selectorInformer:       profileInformerFactory.Eci().V1beta1().Selectors().Informer(),
-		selectorLister:         profileInformerFactory.Eci().V1beta1().Selectors().Lister(),
+		selectorInformer:       profileInformerFactory.Eci().V1().Selectors().Informer(),
+		selectorLister:         profileInformerFactory.Eci().V1().Selectors().Lister(),
 	}
 }
 
@@ -101,11 +101,11 @@ func (m *Manager) GetPod(namespace, name string) (*v1.Pod, error) {
 	return m.podLister.Pods(namespace).Get(name)
 }
 
-func (m *Manager) ListSelectors() ([]*eciv1beta1.Selector, error) {
+func (m *Manager) ListSelectors() ([]*eciv1.Selector, error) {
 	return m.selectorLister.List(labels.Everything())
 }
 
-func (m *Manager) GetSelector(name string) (*eciv1beta1.Selector, error) {
+func (m *Manager) GetSelector(name string) (*eciv1.Selector, error) {
 	return m.selectorLister.Get(name)
 }
 

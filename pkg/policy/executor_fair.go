@@ -1,7 +1,7 @@
 package policy
 
 import (
-	eciv1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	"eci.io/eci-profile/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 )
@@ -12,7 +12,7 @@ func NewFairExecutor() Executor {
 	return &FairExecutor{}
 }
 
-func (e *FairExecutor) OnPodCreating(selector *eciv1beta1.Selector, pod *v1.Pod) ([]PatchInfo, error) {
+func (e *FairExecutor) OnPodCreating(selector *eciv1.Selector, pod *v1.Pod) ([]PatchInfo, error) {
 	var patchInfos []PatchInfo
 	if !existVirtualTolerations(pod.Spec.Tolerations) {
 		patchInfos = append(patchInfos, addVirtualNodeToleration(pod))
@@ -26,7 +26,7 @@ func (e *FairExecutor) OnPodCreating(selector *eciv1beta1.Selector, pod *v1.Pod)
 	return patchInfos, nil
 }
 
-func (e *FairExecutor) OnPodUnscheduled(selector *eciv1beta1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
+func (e *FairExecutor) OnPodUnscheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
 	if existVirtualTolerations(pod.Spec.Tolerations) {
 		return nil, nil
 	}

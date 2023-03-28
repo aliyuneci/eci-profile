@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	eciv1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	"eci.io/eci-profile/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,7 +13,7 @@ import (
 func TestNormalNodePreferOnPodUnscheduled(t *testing.T) {
 	for desc, test := range map[string]struct {
 		pod         *v1.Pod
-		selector    *eciv1beta1.Selector
+		selector    *eciv1.Selector
 		mutatePodFn func(*v1.Pod)
 		expect      *utils.PatchOption
 		expectErr   error
@@ -41,9 +41,9 @@ func TestNormalNodePreferOnPodUnscheduled(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{},
 				Spec:       v1.PodSpec{},
 			},
-			selector: &eciv1beta1.Selector{
-				Spec: eciv1beta1.SelectorSpec{
-					Effect: &eciv1beta1.SideEffect{},
+			selector: &eciv1.Selector{
+				Spec: eciv1.SelectorSpec{
+					Effect: &eciv1.SideEffect{},
 				},
 			},
 			expect: &utils.PatchOption{
@@ -67,9 +67,9 @@ func TestNormalNodePreferOnPodUnscheduled(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{},
 				Spec:       v1.PodSpec{},
 			},
-			selector: &eciv1beta1.Selector{
-				Spec: eciv1beta1.SelectorSpec{
-					Effect: &eciv1beta1.SideEffect{
+			selector: &eciv1.Selector{
+				Spec: eciv1.SelectorSpec{
+					Effect: &eciv1.SideEffect{
 						Annotations: map[string]string{
 							"foo": "boo",
 						},

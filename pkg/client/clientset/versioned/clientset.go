@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"net/http"
 
-	eciv1beta1 "eci.io/eci-profile/pkg/client/clientset/versioned/typed/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/client/clientset/versioned/typed/eci/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -29,19 +29,18 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	EciV1beta1() eciv1beta1.EciV1beta1Interface
+	EciV1() eciv1.EciV1Interface
 }
 
-// Clientset contains the clients for groups. Each group has exactly one
-// version included in a Clientset.
+// Clientset contains the clients for groups.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	eciV1beta1 *eciv1beta1.EciV1beta1Client
+	eciV1 *eciv1.EciV1Client
 }
 
-// EciV1beta1 retrieves the EciV1beta1Client
-func (c *Clientset) EciV1beta1() eciv1beta1.EciV1beta1Interface {
-	return c.eciV1beta1
+// EciV1 retrieves the EciV1Client
+func (c *Clientset) EciV1() eciv1.EciV1Interface {
+	return c.eciV1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -88,7 +87,7 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 
 	var cs Clientset
 	var err error
-	cs.eciV1beta1, err = eciv1beta1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.eciV1, err = eciv1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +112,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.eciV1beta1 = eciv1beta1.New(c)
+	cs.eciV1 = eciv1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

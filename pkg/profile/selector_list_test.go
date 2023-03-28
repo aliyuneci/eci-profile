@@ -5,7 +5,7 @@ import (
 
 	"sort"
 
-	"eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	v1 "eci.io/eci-profile/pkg/apis/eci/v1"
 )
 
 func TestSelectorList(t *testing.T) {
@@ -20,34 +20,34 @@ func TestSelectorList(t *testing.T) {
 	}{
 		"test selector list 1": {
 			originSelectorList: SelectorList{
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int5}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int4}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int3}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int2}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int1}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int5}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int4}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int3}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int2}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int1}},
 			},
 			expectSelectorList: SelectorList{
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int5}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int4}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int3}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int2}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int1}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int5}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int4}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int3}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int2}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int1}},
 			},
 		},
 		"test selector list 2": {
 			originSelectorList: SelectorList{
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int1}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int3}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int4}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int2}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int5}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int1}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int3}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int4}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int2}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int5}},
 			},
 			expectSelectorList: SelectorList{
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int5}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int4}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int3}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int2}},
-				v1beta1.Selector{Spec: v1beta1.SelectorSpec{Priority: &int1}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int5}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int4}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int3}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int2}},
+				v1.Selector{Spec: v1.SelectorSpec{Priority: &int1}},
 			},
 		},
 	} {

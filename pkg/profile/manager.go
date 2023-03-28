@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"sort"
 
-	eciv1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	"eci.io/eci-profile/pkg/client/clientset/versioned"
 	"eci.io/eci-profile/pkg/policy"
 	"eci.io/eci-profile/pkg/resource"
@@ -107,12 +107,12 @@ func (m *Manager) onPodUnscheduled(pod *v1.Pod) error {
 	return nil
 }
 
-func (m *Manager) matchSelectorForPod(pod *v1.Pod) (*eciv1beta1.Selector, error) {
+func (m *Manager) matchSelectorForPod(pod *v1.Pod) (*eciv1.Selector, error) {
 	allSelectors, err := m.resourceManager.ListSelectors()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list selectors")
 	}
-	var selectors []eciv1beta1.Selector
+	var selectors []eciv1.Selector
 	for _, selector := range allSelectors {
 		matched, err := m.matchPod(selector, pod)
 		if err != nil {
@@ -122,7 +122,7 @@ func (m *Manager) matchSelectorForPod(pod *v1.Pod) (*eciv1beta1.Selector, error)
 			selectors = append(selectors, *selector)
 		}
 	}
-	var selector *eciv1beta1.Selector
+	var selector *eciv1.Selector
 	if len(selectors) > 0 {
 		sort.Sort(SelectorList(selectors))
 		selector = &selectors[0]
@@ -133,7 +133,7 @@ func (m *Manager) matchSelectorForPod(pod *v1.Pod) (*eciv1beta1.Selector, error)
 func (m *Manager) registerPodEventHandler() {
 	m.resourceManager.AddSelectorEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			selector, ok := obj.(*eciv1beta1.Selector)
+			selector, ok := obj.(*eciv1.Selector)
 			if !ok {
 				return
 			}
@@ -145,7 +145,7 @@ func (m *Manager) registerPodEventHandler() {
 			if reflect.DeepEqual(oldObj, newObj) {
 				return
 			}
-			selector, ok := newObj.(*eciv1beta1.Selector)
+			selector, ok := newObj.(*eciv1.Selector)
 			if !ok {
 				return
 			}
@@ -154,7 +154,7 @@ func (m *Manager) registerPodEventHandler() {
 			klog.V(5).Infof("selector payload: %s", payload)
 		},
 		DeleteFunc: func(obj interface{}) {
-			selector, ok := obj.(*eciv1beta1.Selector)
+			selector, ok := obj.(*eciv1.Selector)
 			if !ok {
 				return
 			}
@@ -191,7 +191,7 @@ func (m *Manager) registerPodEventHandler() {
 	})
 }
 
-func (m *Manager) matchPod(selector *eciv1beta1.Selector, pod *v1.Pod) (bool, error) {
+func (m *Manager) matchPod(selector *eciv1.Selector, pod *v1.Pod) (bool, error) {
 	if selector.Spec.NamespaceLabels != nil {
 		selector, err := metav1.LabelSelectorAsSelector(selector.Spec.NamespaceLabels)
 		if err != nil {

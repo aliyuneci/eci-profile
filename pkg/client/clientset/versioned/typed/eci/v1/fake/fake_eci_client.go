@@ -18,22 +18,22 @@ limitations under the License.
 package fake
 
 import (
-	v1beta1 "eci.io/eci-profile/pkg/client/clientset/versioned/typed/eci/v1beta1"
+	v1 "eci.io/eci-profile/pkg/client/clientset/versioned/typed/eci/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeEciV1beta1 struct {
+type FakeEciV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeEciV1beta1) Selectors() v1beta1.SelectorInterface {
+func (c *FakeEciV1) Selectors() v1.SelectorInterface {
 	return &FakeSelectors{c}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeEciV1beta1) RESTClient() rest.Interface {
+func (c *FakeEciV1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

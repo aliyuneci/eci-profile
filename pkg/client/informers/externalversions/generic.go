@@ -20,7 +20,7 @@ package externalversions
 import (
 	"fmt"
 
-	v1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	v1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -51,9 +51,9 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=eci.aliyun.com, Version=v1beta1
-	case v1beta1.SchemeGroupVersion.WithResource("selectors"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Eci().V1beta1().Selectors().Informer()}, nil
+	// Group=eci.aliyun.com, Version=v1
+	case v1.SchemeGroupVersion.WithResource("selectors"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Eci().V1().Selectors().Informer()}, nil
 
 	}
 

@@ -19,8 +19,8 @@ package fake
 
 import (
 	clientset "eci.io/eci-profile/pkg/client/clientset/versioned"
-	eciv1beta1 "eci.io/eci-profile/pkg/client/clientset/versioned/typed/eci/v1beta1"
-	fakeeciv1beta1 "eci.io/eci-profile/pkg/client/clientset/versioned/typed/eci/v1beta1/fake"
+	eciv1 "eci.io/eci-profile/pkg/client/clientset/versioned/typed/eci/v1"
+	fakeeciv1 "eci.io/eci-profile/pkg/client/clientset/versioned/typed/eci/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -78,7 +78,7 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// EciV1beta1 retrieves the EciV1beta1Client
-func (c *Clientset) EciV1beta1() eciv1beta1.EciV1beta1Interface {
-	return &fakeeciv1beta1.FakeEciV1beta1{Fake: &c.Fake}
+// EciV1 retrieves the EciV1Client
+func (c *Clientset) EciV1() eciv1.EciV1Interface {
+	return &fakeeciv1.FakeEciV1{Fake: &c.Fake}
 }

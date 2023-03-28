@@ -1,4 +1,4 @@
-package v1beta1
+package v1
 
 import (
 	v1 "k8s.io/api/core/v1"
@@ -29,8 +29,8 @@ type FairPolicySource struct{}
 type NormalNodeOnlyPolicySource struct{}
 
 type NormalNodePreferPolicySource struct {
-	CPURatio    *float64 `json:"cpuRatio,omitempty"`
-	MemoryRatio *float64 `json:"memoryRatio,omitempty"`
+	CPURatio    *int `json:"cpuRatio,omitempty"`
+	MemoryRatio *int `json:"memoryRatio,omitempty"`
 }
 
 type VirtualNodeOnlyPolicySource struct{}

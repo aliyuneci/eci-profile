@@ -20,7 +20,7 @@ package fake
 import (
 	"context"
 
-	v1beta1 "eci.io/eci-profile/pkg/apis/eci/v1beta1"
+	eciv1 "eci.io/eci-profile/pkg/apis/eci/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,27 +31,27 @@ import (
 
 // FakeSelectors implements SelectorInterface
 type FakeSelectors struct {
-	Fake *FakeEciV1beta1
+	Fake *FakeEciV1
 }
 
-var selectorsResource = schema.GroupVersionResource{Group: "eci.aliyun.com", Version: "v1beta1", Resource: "selectors"}
+var selectorsResource = schema.GroupVersionResource{Group: "eci.aliyun.com", Version: "v1", Resource: "selectors"}
 
-var selectorsKind = schema.GroupVersionKind{Group: "eci.aliyun.com", Version: "v1beta1", Kind: "Selector"}
+var selectorsKind = schema.GroupVersionKind{Group: "eci.aliyun.com", Version: "v1", Kind: "Selector"}
 
 // Get takes name of the selector, and returns the corresponding selector object, and an error if there is any.
-func (c *FakeSelectors) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.Selector, err error) {
+func (c *FakeSelectors) Get(ctx context.Context, name string, options v1.GetOptions) (result *eciv1.Selector, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootGetAction(selectorsResource, name), &v1beta1.Selector{})
+		Invokes(testing.NewRootGetAction(selectorsResource, name), &eciv1.Selector{})
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1beta1.Selector), err
+	return obj.(*eciv1.Selector), err
 }
 
 // List takes label and field selectors, and returns the list of Selectors that match those selectors.
-func (c *FakeSelectors) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.SelectorList, err error) {
+func (c *FakeSelectors) List(ctx context.Context, opts v1.ListOptions) (result *eciv1.SelectorList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootListAction(selectorsResource, selectorsKind, opts), &v1beta1.SelectorList{})
+		Invokes(testing.NewRootListAction(selectorsResource, selectorsKind, opts), &eciv1.SelectorList{})
 	if obj == nil {
 		return nil, err
 	}
@@ -60,8 +60,8 @@ func (c *FakeSelectors) List(ctx context.Context, opts v1.ListOptions) (result *
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1beta1.SelectorList{ListMeta: obj.(*v1beta1.SelectorList).ListMeta}
-	for _, item := range obj.(*v1beta1.SelectorList).Items {
+	list := &eciv1.SelectorList{ListMeta: obj.(*eciv1.SelectorList).ListMeta}
+	for _, item := range obj.(*eciv1.SelectorList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -76,29 +76,29 @@ func (c *FakeSelectors) Watch(ctx context.Context, opts v1.ListOptions) (watch.I
 }
 
 // Create takes the representation of a selector and creates it.  Returns the server's representation of the selector, and an error, if there is any.
-func (c *FakeSelectors) Create(ctx context.Context, selector *v1beta1.Selector, opts v1.CreateOptions) (result *v1beta1.Selector, err error) {
+func (c *FakeSelectors) Create(ctx context.Context, selector *eciv1.Selector, opts v1.CreateOptions) (result *eciv1.Selector, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootCreateAction(selectorsResource, selector), &v1beta1.Selector{})
+		Invokes(testing.NewRootCreateAction(selectorsResource, selector), &eciv1.Selector{})
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1beta1.Selector), err
+	return obj.(*eciv1.Selector), err
 }
 
 // Update takes the representation of a selector and updates it. Returns the server's representation of the selector, and an error, if there is any.
-func (c *FakeSelectors) Update(ctx context.Context, selector *v1beta1.Selector, opts v1.UpdateOptions) (result *v1beta1.Selector, err error) {
+func (c *FakeSelectors) Update(ctx context.Context, selector *eciv1.Selector, opts v1.UpdateOptions) (result *eciv1.Selector, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootUpdateAction(selectorsResource, selector), &v1beta1.Selector{})
+		Invokes(testing.NewRootUpdateAction(selectorsResource, selector), &eciv1.Selector{})
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1beta1.Selector), err
+	return obj.(*eciv1.Selector), err
 }
 
 // Delete takes name of the selector and deletes it. Returns an error if one occurs.
 func (c *FakeSelectors) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewRootDeleteActionWithOptions(selectorsResource, name, opts), &v1beta1.Selector{})
+		Invokes(testing.NewRootDeleteActionWithOptions(selectorsResource, name, opts), &eciv1.Selector{})
 	return err
 }
 
@@ -106,16 +106,16 @@ func (c *FakeSelectors) Delete(ctx context.Context, name string, opts v1.DeleteO
 func (c *FakeSelectors) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	action := testing.NewRootDeleteCollectionAction(selectorsResource, listOpts)
 
-	_, err := c.Fake.Invokes(action, &v1beta1.SelectorList{})
+	_, err := c.Fake.Invokes(action, &eciv1.SelectorList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched selector.
-func (c *FakeSelectors) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Selector, err error) {
+func (c *FakeSelectors) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *eciv1.Selector, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootPatchSubresourceAction(selectorsResource, name, pt, data, subresources...), &v1beta1.Selector{})
+		Invokes(testing.NewRootPatchSubresourceAction(selectorsResource, name, pt, data, subresources...), &eciv1.Selector{})
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1beta1.Selector), err
+	return obj.(*eciv1.Selector), err
 }
