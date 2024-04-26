@@ -39,6 +39,11 @@ func (m *Manager) OnPodUnscheduled(selector *eciv1.Selector, pod *v1.Pod) (*util
 	return executor.OnPodUnscheduled(selector, pod)
 }
 
+func (m *Manager) OnPodScheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
+	executor := m.findExecutor(selector)
+	return executor.OnPodScheduled(selector, pod)
+}
+
 func (m *Manager) findExecutor(selector *eciv1.Selector) Executor {
 	executorName := ExecutorNameVirtualNodeOnly
 	policy := selector.Spec.Policy

@@ -38,3 +38,14 @@ func (e *VirtualNodeOnlyExecutor) OnPodUnscheduled(selector *eciv1.Selector, pod
 		WithLabels(selector.Spec.Effect.Labels)
 	return patchOption, nil
 }
+
+func (e *VirtualNodeOnlyExecutor) OnPodScheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
+	patchOption := utils.NewPatchOption()
+	if !existVirtualTolerations(pod.Spec.Tolerations) {
+		tolerations := append(pod.Spec.Tolerations, virtualNodeToleration)
+		patchOption.WithTolerations(tolerations)
+	}
+	patchOption.WithAnnotations(selector.Spec.Effect.Annotations).
+		WithLabels(selector.Spec.Effect.Labels)
+	return patchOption, nil
+}

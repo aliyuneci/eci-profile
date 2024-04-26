@@ -15,4 +15,5 @@ type PatchInfo struct {
 type Executor interface {
 	OnPodCreating(selector *eciv1.Selector, pod *v1.Pod) ([]PatchInfo, error)
 	OnPodUnscheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error)
+	OnPodScheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error)
 }

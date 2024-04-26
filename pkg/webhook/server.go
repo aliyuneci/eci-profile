@@ -32,13 +32,15 @@ type admitv1beta1Func func(admissionv1beta1.AdmissionReview) *admissionv1beta1.A
 // admitv1beta1Func handles a v1 admission
 type admitv1Func func(admissionv1.AdmissionReview) *admissionv1.AdmissionResponse
 
-type MutatePodFunc func(pod *v1.Pod) ([]policy.PatchInfo, error)
+type MutatePodFunc func(pod *v1.Pod, nodeName string) ([]policy.PatchInfo, error)
+type MutateBindingFunc func(pod *v1.Pod, nodeName string) error
 
 type Config struct {
-	K8sClient     *kubernetes.Clientset
-	MutatePodFunc MutatePodFunc
-	CACertPath    string
-	CAKeyPath     string
+	K8sClient         *kubernetes.Clientset
+	MutatePodFunc     MutatePodFunc
+	MutateBindingFunc MutateBindingFunc
+	CACertPath        string
+	CAKeyPath         string
 }
 
 type Server struct {
@@ -49,6 +51,7 @@ type Server struct {
 	serverPort           int32
 	certIssuer           *cert.Issuer
 	mutatePodFunc        MutatePodFunc
+	mutateBindingFunc    MutateBindingFunc
 }
 
 func NewServer(config *Config) (*Server, error) {
@@ -99,6 +102,7 @@ func NewServer(config *Config) (*Server, error) {
 		serverPath:           "/inject",
 		serverPort:           443,
 		mutatePodFunc:        config.MutatePodFunc,
+		mutateBindingFunc:    config.MutateBindingFunc,
 	}, nil
 }
 
@@ -135,7 +139,7 @@ func (s *Server) Run(ctx context.Context) error {
 }
 
 func (s *Server) serveMutatingPod(w http.ResponseWriter, r *http.Request) {
-	serve(w, r, newDelegateToV1AdmitHandler(s.mutatePod))
+	serve(w, r, newDelegateToV1AdmitHandler(s.mutate))
 }
 
 func (s *Server) healthCheckHandle(w http.ResponseWriter, r *http.Request) {
@@ -235,29 +239,58 @@ func serve(w http.ResponseWriter, r *http.Request, admit admitHandler) {
 	}
 }
 
-func (s *Server) mutatePod(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
+func (s *Server) mutate(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 	req := ar.Request
-	klog.Infof("AdmissionReview for Kind=%v, Namespace=%v Name=%v UID=%v PatchOperation=%v UserInfo=%v",
-		req.Kind, req.Namespace, req.Name, req.UID, req.Operation, req.UserInfo)
+	klog.Infof("AdmissionReview for Kind=%v, Namespace=%v Name=%v UID=%v PatchOperation=%v UserInfo=%v Resource=%v, SubResource=%v",
+		req.Kind, req.Namespace, req.Name, req.UID, req.Operation, req.UserInfo, req.Resource, req.SubResource)
+	// for pod creating, check if created with nodeName
 	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-
 	if req.Resource != podResource {
 		klog.Errorf("Resource=%s, expect Resource %s", req.Resource.String(), podResource.String())
 		return nil
 	}
 
+	nodename := ""
 	pod := &v1.Pod{}
-	deserializer := codecs.UniversalDeserializer()
-	if _, _, err := deserializer.Decode(req.Object.Raw, nil, pod); err != nil {
-		klog.Error(err)
-		return toV1AdmissionResponse(err)
+	patchInfos := []policy.PatchInfo{}
+	var err error
+
+	if req.SubResource == "binding" {
+		podBinding := &v1.Binding{}
+		deserializer := codecs.UniversalDeserializer()
+		if _, _, err := deserializer.Decode(req.Object.Raw, nil, podBinding); err != nil {
+			klog.Error(err)
+			return toV1AdmissionResponse(err)
+		}
+
+		pod, err = s.k8sClient.CoreV1().Pods(podBinding.Namespace).Get(context.Background(), podBinding.Name, metav1.GetOptions{})
+		if err != nil {
+			klog.Error(err)
+			return toV1AdmissionResponse(err)
+		}
+		nodename = podBinding.Target.Name
+		err = s.mutateBindingFunc(pod, nodename)
+		if err != nil {
+			klog.Error(err)
+			return toV1AdmissionResponse(err)
+		}
 	}
 
-	pod.Namespace = req.Namespace
-	patchInfos, err := s.mutatePodFunc(pod)
-	if err != nil {
-		klog.Error(err)
-		return toV1AdmissionResponse(err)
+	if req.SubResource == "" {
+		deserializer := codecs.UniversalDeserializer()
+		if _, _, err := deserializer.Decode(req.Object.Raw, nil, pod); err != nil {
+			klog.Error(err)
+			return toV1AdmissionResponse(err)
+		}
+		if pod.Spec.NodeName != "" {
+			nodename = pod.Spec.NodeName
+			pod.Namespace = req.Namespace
+			patchInfos, err = s.mutatePodFunc(pod, nodename)
+			if err != nil {
+				klog.Error(err)
+				return toV1AdmissionResponse(err)
+			}
+		}
 	}
 
 	ret := &admissionv1.AdmissionResponse{

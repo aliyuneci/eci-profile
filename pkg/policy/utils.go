@@ -83,3 +83,7 @@ func existVirtualTolerations(tolerations []v1.Toleration) bool {
 
 	return false
 }
+
+func IsVirtualNode(node *v1.Node) bool {
+	return node.Labels[vnodeNodeSelectorKey] == vnodeNodeSelectorVal
+}
