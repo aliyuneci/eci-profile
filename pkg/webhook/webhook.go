@@ -2,6 +2,8 @@ package webhook
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -9,6 +11,7 @@ import (
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 )
 
@@ -39,8 +42,18 @@ func (s *Server) registerMutatingWebhookV1(ctx context.Context) error {
 		if _, err := client.Create(ctx, webhookConfig, metav1.CreateOptions{}); err != nil {
 			klog.Errorf("[v1] create %q MutatingWebhookConfiguration failed: %s", s.mutatingName, err)
 			return err
+		} else {
+			klog.Infof("[v1] create %q MutatingWebhookConfiguration.", s.mutatingName)
+			return nil
 		}
 	}
+	valueByte, _ := json.Marshal(webhookConfig.Webhooks)
+	patchData := fmt.Sprintf(`[{"op":"replace","path":"/webhooks","value": %s}]`, string(valueByte))
+	if _, err := client.Patch(ctx, s.mutatingName, types.JSONPatchType, []byte(patchData), metav1.PatchOptions{}); err != nil {
+		klog.Errorf("Error patching MutatingWebhookConfiguration %q: %s", s.mutatingName, err)
+		return fmt.Errorf("error patching MutatingWebhookConfiguration %q: %s", s.mutatingName, err)
+	}
+	klog.Infof("Patched MutatingWebhookConfiguration %q ...", s.mutatingName)
 	return nil
 }
 
@@ -92,7 +105,7 @@ func (s *Server) createV1MutatingWebhook(nsSelector, objectSelector *metav1.Labe
 			Rule: admissionregistrationv1.Rule{
 				APIGroups:   []string{""},
 				APIVersions: []string{"v1"},
-				Resources:   []string{"pods"},
+				Resources:   []string{"pods", "pods/binding"},
 				Scope: func() *admissionregistrationv1.ScopeType {
 					tmp := admissionregistrationv1.AllScopes
 					return &tmp
@@ -142,7 +155,7 @@ func (s *Server) createV1beta1MutatingWebhook(nsSelector, objectSelector *metav1
 			Rule: admissionregistrationv1beta1.Rule{
 				APIGroups:   []string{""},
 				APIVersions: []string{"v1"},
-				Resources:   []string{"pods"},
+				Resources:   []string{"pods", "pods/binding"},
 				Scope: func() *admissionregistrationv1beta1.ScopeType {
 					tmp := admissionregistrationv1beta1.AllScopes
 					return &tmp

@@ -45,10 +45,11 @@ func NewManager(config *Config) (*Manager, error) {
 	}
 
 	webhookConfig := &webhook.Config{
-		K8sClient:     config.K8sClient,
-		MutatePodFunc: manager.onPodCreating,
-		CACertPath:    config.CACertPath,
-		CAKeyPath:     config.CAKeyPath,
+		K8sClient:         config.K8sClient,
+		MutatePodFunc:     manager.onPodCreating,
+		MutateBindingFunc: manager.onPodScheduled,
+		CACertPath:        config.CACertPath,
+		CAKeyPath:         config.CAKeyPath,
 	}
 	webhookServer, err := webhook.NewServer(webhookConfig)
 	if err != nil {
@@ -68,7 +69,19 @@ func (m *Manager) Run(ctx context.Context) error {
 	return m.webhookServer.Run(ctx)
 }
 
-func (m *Manager) onPodCreating(pod *v1.Pod) ([]policy.PatchInfo, error) {
+func (m *Manager) onPodCreating(pod *v1.Pod, nodeName string) ([]policy.PatchInfo, error) {
+	if nodeName == "" {
+		return nil, nil
+	}
+	node, err := m.resourceManager.GetNode(nodeName)
+	if err != nil {
+		klog.Warningf("find to check node details of %s for pod %s/%s: %v", pod.Spec.NodeName, pod.Namespace, pod.Name, err)
+		return nil, err
+	}
+	if !policy.IsVirtualNode(node) {
+		return nil, nil
+	}
+	// effect selectors for vnode pod
 	selector, err := m.matchSelectorForPod(pod)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to match selector")
@@ -79,6 +92,43 @@ func (m *Manager) onPodCreating(pod *v1.Pod) ([]policy.PatchInfo, error) {
 	}
 	klog.Infof("pod %s/%s(%s) matched the selector %s(%s)", pod.Namespace, pod.Name, pod.UID, selector.Name, selector.UID)
 	return m.policyManager.OnPodCreating(selector, pod)
+}
+
+func (m *Manager) onPodScheduled(pod *v1.Pod, nodeName string) error {
+	if nodeName == "" {
+		return nil
+	}
+	node, err := m.resourceManager.GetNode(nodeName)
+	if err != nil {
+		klog.Warningf("find to check node details of %s for pod %s/%s: %v", pod.Spec.NodeName, pod.Namespace, pod.Name, err)
+		return err
+	}
+	if !policy.IsVirtualNode(node) {
+		return nil
+	}
+	// effect selectors for vnode pod
+	selector, err := m.matchSelectorForPod(pod)
+	if err != nil {
+		return errors.Wrap(err, "failed to match selector")
+	}
+	if selector == nil {
+		klog.V(3).Infof("no selector matched for pod %s/%s, skip it", pod.Namespace, pod.Name)
+		return nil
+	}
+	klog.Infof("pod %s/%s(%s) matched the selector %s(%s)", pod.Namespace, pod.Name, pod.UID, selector.Name, selector.UID)
+	patchOptions, err := m.policyManager.OnPodScheduled(selector, pod)
+	if err != nil {
+		klog.Warningf("execute policy for pod %s/%s failed: %v", pod.Namespace, pod.Name, err)
+		return err
+	}
+	if patchOptions != nil {
+		if _, err := utils.PatchPod(context.TODO(), m.k8sClient, pod.Namespace, pod.Name, *patchOptions); err != nil {
+			klog.Errorf("failed to patch the pod %s/%s(%s): %q", pod.Namespace, pod.Name, pod.UID, err)
+			return err
+		}
+		klog.Infof("the pod %s/%s is scheduled to vnode (matched: %s)", pod.Namespace, pod.Name, selector.Name)
+	}
+	return nil
 }
 
 func (m *Manager) onPodUnscheduled(pod *v1.Pod) error {

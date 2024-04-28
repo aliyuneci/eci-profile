@@ -279,7 +279,7 @@ spec:
       serviceAccount: eci-profile
       containers:
         - name: eci-profile
-          image: registry.cn-beijing.aliyuncs.com/eci-release/eci-profile:test
+          image: registry.cn-beijing.aliyuncs.com/eci-release/eci-profile:0.0.3
           imagePullPolicy: Always
           resources:
             requests:

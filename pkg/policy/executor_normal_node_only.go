@@ -20,3 +20,7 @@ func (e *NormalNodeOnlyExecutor) OnPodCreating(selector *eciv1.Selector, pod *v1
 func (e *NormalNodeOnlyExecutor) OnPodUnscheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
 	return nil, nil
 }
+
+func (e *NormalNodeOnlyExecutor) OnPodScheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
+	return nil, nil
+}

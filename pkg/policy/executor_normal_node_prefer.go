@@ -23,8 +23,16 @@ func (e *NormalNodePreferExecutor) OnPodUnscheduled(selector *eciv1.Selector, po
 	}
 	patchOption := utils.NewPatchOption()
 	tolerations := append(pod.Spec.Tolerations, virtualNodeToleration)
-	patchOption.WithTolerations(tolerations).
-		WithAnnotations(selector.Spec.Effect.Annotations).
-		WithLabels(selector.Spec.Effect.Labels)
+	patchOption.WithTolerations(tolerations)
+	return patchOption, nil
+}
+
+func (e *NormalNodePreferExecutor) OnPodScheduled(selector *eciv1.Selector, pod *v1.Pod) (*utils.PatchOption, error) {
+	patchOption := utils.NewPatchOption()
+	if !existVirtualTolerations(pod.Spec.Tolerations) {
+		tolerations := append(pod.Spec.Tolerations, virtualNodeToleration)
+		patchOption.WithTolerations(tolerations)
+	}
+	patchOption.WithAnnotations(selector.Spec.Effect.Annotations).WithLabels(selector.Spec.Effect.Labels)
 	return patchOption, nil
 }
